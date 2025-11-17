@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod # is called the blueprint for deployable unit
+metadata:
+  name: nginx-101 # Name of the Pod 
+  labels: # Label is used for grouping
+    app: nginx 
+spec: # The specification / configuration of Pod
+  containers:
+    - name: reverse-proxy
+      image: nginx:1.25.3 
+      ports:
+      - containerPort: 80
+
+    - name: load-balancer
+      image: nginx:1.25.3
+      ports:
+      - containerPort: 81
+
+# To add or remove new container must delete pod and create again

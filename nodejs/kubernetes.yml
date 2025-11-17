@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs-hello
+  template:
+    metadata:
+      labels:
+        app: nodejs-hello
+    spec:
+      imagePullSecrets:
+      - name: node-x
+      containers:
+        - name: nodejs-hello
+          image: mdruhulamin/hello-node:latest
+          ports:
+            - containerPort: 3000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs-hello-service
+spec:
+  type: NodePort
+  selector:
+    app: nodejs-hello
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30080
