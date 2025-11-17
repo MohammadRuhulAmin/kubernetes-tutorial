@@ -1,19 +1,23 @@
 apiVersion: v1
-kind: Pod # is called the blueprint for deployable unit
+kind: Pod
 metadata:
-  name: nginx-101 # Name of the Pod 
-  labels: # Label is used for grouping
-    app: nginx 
-spec: # The specification / configuration of Pod
+  name: nginx-mysql-pod
+  labels:
+    app: nginx-mysql
+spec:
   containers:
     - name: reverse-proxy
-      image: nginx:1.25.3 
-      ports:
-      - containerPort: 80
-
-    - name: load-balancer
       image: nginx:1.25.3
       ports:
-      - containerPort: 81
+        - containerPort: 80
+    
+    - name: database
+      image: mysql:8.0
+      ports:
+        - containerPort: 3306
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: my-secret-pw
+
 
 # To add or remove new container must delete pod and create again
