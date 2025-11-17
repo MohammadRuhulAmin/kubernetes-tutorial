@@ -10,7 +10,13 @@ spec:
       image: nginx:1.25.3
       ports:
         - containerPort: 80
-    
+      resources:
+        requests:
+          cpu: "250m" # Request 0.25 CPU Core
+          memory: "128Mi" # Request 128 MB of Memory
+        limits:
+          cpu: "500m" 
+          memory: "256Mi"
     - name: database
       image: mysql:8.0
       ports:
