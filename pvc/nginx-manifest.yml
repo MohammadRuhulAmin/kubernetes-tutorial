@@ -4,11 +4,11 @@ metadata:
   name: nginx-tute
   labels:
     apps: nginx
-
 spec:
   containers:
   - name: nginx-load-balancer
     image: nginx:1.25.3
+    imagePullPolicy: IfNotPresent # it can be Always, Never
     command: ["/bin/sh", "-c"]
     args: ["echo 'hi how are you' >> /opt/test.txt  && sleep 120003"]
     ports:
@@ -16,6 +16,51 @@ spec:
     volumeMounts: # inside the container which path will store attached files
     - name: test-volume
       mountPath: /opt 
+  - name: nginx-reverse-proxy
+    image: nginx:1.25.3
+    imagePullPolicy: IfNotPresent
+    ports:
+      - containerPort: 80
+    volumeMounts:
+    - name: test-volume
+      mountPath: /mnt
+  volumes:
+  - name: test-volume
+  # emptyDir: is a temporay volume that is created when a Pod is assigned to a Node and exists as long as that Pod is running on that node.
+  # Used for short-lived storage
+  # emptyDir is the shared memory or share file among containers
+    emptyDir: {}  
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-tute
+  labels:
+    apps: nginx
+
+spec:
+  containers:
+  - name: nginx-load-balancer
+    image: nginx:1.25.3
+    command: ["/bin/sh", "-c"]
+    args: ["echo 'hi how are you' >> /opt/test.txt && echo 'another test-file' >> /data/test.txt  && sleep 120003"]
+    ports:
+    - containerPort: 80 
+    volumeMounts: # inside the container which path will store attached files
+    - name: test-volume
+      mountPath: /opt
+    - name: host-volume
+      mountPath: /data 
+    lifecycle:
+      postStart:
+        sleep: 10 # this sleep is hook handler
+        exec: # This exec is also called hook handler 
+          command: ["/bin/sh", "-c", "echo 'Container Started!' >> /opt/start.log"]
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "echo 'Container stopping..!' >> /opt/stop.log"]
 
   - name: nginx-reverse-proxy
     image: nginx:1.25.3
@@ -23,10 +68,12 @@ spec:
       - containerPort: 80
     volumeMounts:
     - name: test-volume
-      mountPath: /opt
+      mountPath: /mnt
+    - name: host-volume
+      mountPath: /data 
   volumes:
   - name: test-volume
-    emptyDir: {}  # is a temporay volume that is created when a Pod is assigned to a Node and exists as long as that Pod is running on that node.
-                 # Used for short-lived storage
-                 # emptyDir is the shared memory or share file among containers
-
+    emptyDir: {} 
+  - name: host-volume
+    hostPath: 
+      path: /app
