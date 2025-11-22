@@ -30,16 +30,13 @@ spec:
   # Used for short-lived storage
   # emptyDir is the shared memory or share file among containers
     emptyDir: {}  
-
 ---
-
 apiVersion: v1
 kind: Pod
 metadata:
   name: nginx-tute
   labels:
     apps: nginx
-
 spec:
   containers:
   - name: nginx-load-balancer
@@ -61,7 +58,6 @@ spec:
       preStop:
         exec:
           command: ["/bin/sh", "-c", "echo 'Container stopping..!' >> /opt/stop.log"]
-
   - name: nginx-reverse-proxy
     image: nginx:1.25.3
     ports:
@@ -77,3 +73,47 @@ spec:
   - name: host-volume
     hostPath: 
       path: /app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-replica-deployment
+  labels:
+    app: my-nginx
+spec:
+  replicas: 3 # the number of pod 
+  selector:  # selector only manage those pods which labels are matched
+    matchLabels:
+      app: my-nginx
+  template:
+    metadata:
+      labels:
+        app: my-nginx
+    spec: 
+      containers:
+      - name: nginx-101
+        image: nginx:1.25.3
+        ports:
+        - containerPort: 80
+
+---
+# Horizontal Pod Autoscaler for nginx deployment
+# Command kubectl get hpa <hpa-name>
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa # <hpa-name>
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50

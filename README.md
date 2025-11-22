@@ -14,3 +14,6 @@ create user:
 
 user: k8s
 pass: ruhulamin
+
+targetPort does not work or cannot be used in Deployment / Pod. It only works on Service
+
