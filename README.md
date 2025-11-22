@@ -15,5 +15,11 @@ create user:
 user: k8s
 pass: ruhulamin
 
+
+host: 10.10.200.23
+user: ruhul
+passwd: );x#fUUtc%PW1Zo
+
+
 targetPort does not work or cannot be used in Deployment / Pod. It only works on Service
 
